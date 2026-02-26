@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RH Dashboard | XIPP Benefícios</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── Exatas da imagem ── */
+  --bg-app:       #6B4FA0;   /* fundo geral roxo médio */
+  --bg-panel:     #7B5EAF;   /* fundo de cada painel */
+  --bg-panel-alt: #8065BA;   /* painel ligeiramente mais claro */
+
+  --card-dark:    #5A4190;   /* card escuro / barras escuras */
+  --card-mid:     #9B82CC;   /* card lavanda médio */
+  --card-light:   #B8A3DA;   /* card lavanda claro */
+  --card-pale:    #CFC0EA;   /* card lavanda pálido */
+  --card-ghost:   #E2D9F3;   /* card quase branco-lilás */
+
+  --green:        #7FD4B0;   /* verde pastel principal */
+  --green-light:  #A8E6CF;   /* verde pastel claro */
+  --green-dark:   #5BBF99;   /* verde mais saturado */
+
+  --white:        #FFFFFF;
+  --text-main:    rgba(255,255,255,0.95);
+  --text-soft:    rgba(255,255,255,0.60);
+  --text-faint:   rgba(255,255,255,0.30);
+
+  --panel-w: 410px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg-app);
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+/* ─── TOP HEADER ─── */
+.app-header {
+  background: var(--card-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 48px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.logo-mark {
+  width: 26px; height: 26px;
+  background: var(--green);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--card-dark);
+}
+.logo-text { font-size: 12px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+.logo-text span { color: var(--green-light); }
+
+.header-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.15); flex-shrink: 0; }
+
+.hf-label { font-size: 9px; font-weight: 700; color: var(--text-soft); letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+
+.header-filters { display: flex; align-items: center; gap: 6px; flex: 1; overflow-x: auto; }
+.hf-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 10.5px; color: var(--text-main);
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.hf-chip:hover { background: rgba(255,255,255,0.20); }
+.hf-arrow { font-size: 8px; opacity: 0.5; }
+
+.header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.header-date { font-size: 10px; color: var(--text-soft); background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 5px; white-space: nowrap; }
+.btn-update {
+  background: var(--green-dark);
+  border: none; border-radius: 5px;
+  padding: 5px 12px;
+  font-family: 'Sora', sans-serif;
+  font-size: 10.5px; font-weight: 600; color: white;
+  cursor: pointer; transition: background 0.15s;
+}
+.btn-update:hover { background: var(--green); color: var(--card-dark); }
+
+/* ─── TAB BAR ─── */
+.tab-bar {
+  background: var(--card-dark);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 2px;
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+  overflow-x: auto;
+}
+.tab {
+  padding: 9px 18px;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s; white-space: nowrap; user-select: none;
+  margin-bottom: -2px;
+}
+.tab:hover { color: var(--text-main); }
+.tab.active { color: var(--green-light); border-bottom-color: var(--green-light); font-weight: 700; }
+
+/* ─── PANELS SCROLL ─── */
+.panels-scroll {
+  display: flex;
+  min-height: calc(100vh - 94px);
+  overflow-x: auto;
+  gap: 3px;
+  padding: 3px;
+  background: var(--bg-app);
+}
+
+/* ─── PANEL ─── */
+.panel {
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  flex-shrink: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.panel.visible { display: flex; }
+.panel:nth-child(odd)  { background: var(--bg-panel); }
+.panel:nth-child(even) { background: var(--bg-panel-alt); }
+
+.panel-header {
+  background: var(--card-dark);
+  padding: 10px 14px 9px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 2px solid var(--green);
+}
+.panel-eyebrow { font-size: 8.5px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green-light); margin-bottom: 2px; }
+.panel-title { font-size: 13px; font-weight: 700; color: var(--white); }
+.panel-badge { font-size: 9px; padding: 3px 8px; border-radius: 8px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; background: var(--green); color: var(--card-dark); white-space: nowrap; }
+
+.panel-body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+
+/* ─── WIDGETS ─── */
+.widget {
+  background: var(--card-mid);
+  border-radius: 8px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.35s ease both;
+}
+.widget.dark  { background: var(--card-dark); }
+.widget.light { background: var(--card-light); }
+.widget.pale  { background: var(--card-pale); }
+.widget.ghost { background: var(--card-ghost); }
+.widget.green-card { background: var(--green); }
+.widget.green-dark-card { background: var(--green-dark); }
+
+.widget-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.60); margin-bottom: 5px;
+}
+.widget.ghost .widget-label,
+.widget.pale  .widget-label { color: rgba(90,65,144,0.65); }
+.widget.green-card .widget-label { color: rgba(60,40,100,0.70); }
+
+.widget-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; font-weight: 700; color: var(--white); line-height: 1;
+}
+.widget-value.md  { font-size: 28px; }
+.widget-value.sm  { font-size: 22px; }
+.widget-value.xs  { font-size: 18px; }
+.widget-value.dark-text { color: var(--card-dark); }
+
+.widget.ghost .widget-value,
+.widget.pale  .widget-value { color: var(--card-dark); }
+.widget.green-card .widget-value { color: var(--card-dark); }
+
+.widget-sub  { font-size: 9.5px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+.widget.pale  .widget-sub,
+.widget.ghost .widget-sub { color: rgba(90,65,144,0.60); }
+.widget.green-card .widget-sub { color: rgba(60,40,100,0.60); }
+
+.widget-trend { font-size: 10px; font-weight: 600; margin-top: 4px; }
+.t-up   { color: var(--green-light); }
+.t-down { color: #FFB3B3; }
+.t-flat { color: rgba(255,255,255,0.50); }
+
+/* ─── GRID ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 7px; }
+
+/* ─── BAR CHART ─── */
+.bar-list { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+.bar-row { display: flex; align-items: center; gap: 7px; }
+.bar-lbl { font-size: 10px; color: var(--text-main); min-width: 78px; flex-shrink: 0; font-weight: 500; }
+.bar-lbl.xs { min-width: 62px; font-size: 9.5px; }
+.bar-lbl.dark-lbl { color: var(--card-dark); }
+.bar-track { flex: 1; height: 9px; background: rgba(0,0,0,0.18); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; transition: width 1.1s cubic-bezier(.4,0,.2,1); }
+.f-dark    { background: var(--card-dark); }
+.f-light   { background: var(--card-pale); }
+.f-green   { background: var(--green); }
+.f-green-d { background: var(--green-dark); }
+.f-white   { background: rgba(255,255,255,0.70); }
+.bar-val { font-size: 10.5px; font-weight: 700; color: var(--white); min-width: 34px; text-align: right; }
+.bar-val.dark-val { color: var(--card-dark); }
+
+/* ─── DONUT ─── */
+.donut-row { display: flex; align-items: center; gap: 12px; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.dl-item { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-main); }
+.dl-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.dl-val { margin-left: auto; font-weight: 700; color: var(--white); }
+
+/* ─── NPS BAR ─── */
+.nps-bar { display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin: 6px 0 5px; }
+.nps-seg { display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: white; }
+
+/* ─── MINI TABLE ─── */
+.mtable { width: 100%; border-collapse: collapse; }
+.mtable th { font-size: 8.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.55); padding: 5px 7px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.15); }
+.mtable td { font-size: 10px; color: var(--text-main); padding: 6px 7px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.mtable tr:last-child td { border-bottom: none; }
+.mtable .num { font-weight: 700; color: white; }
+.mbadge { display: inline-flex; padding: 2px 7px; border-radius: 8px; font-size: 9px; font-weight: 700; }
+.mb-g { background: var(--green); color: var(--card-dark); }
+.mb-w { background: rgba(255,200,100,0.35); color: #FFD080; }
+.mb-r { background: rgba(255,120,120,0.30); color: #FFB3B3; }
+.mb-p { background: var(--card-pale); color: var(--card-dark); }
+
+/* ─── SLA ─── */
+.sla-row { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.sla-name { font-size: 9.5px; color: var(--text-main); min-width: 68px; flex-shrink: 0; font-weight: 500; }
+.sla-track { flex: 1; height: 7px; background: rgba(0,0,0,0.20); border-radius: 4px; overflow: hidden; }
+.sla-fill { height: 100%; border-radius: 4px; }
+.s-ok   { background: var(--green); }
+.s-warn { background: #F5A623; }
+.s-bad  { background: #FF6B6B; }
+.sla-val { font-size: 10px; font-weight: 700; min-width: 28px; text-align: right; }
+.sla-val.ok   { color: var(--green-light); }
+.sla-val.warn { color: #FFD080; }
+.sla-val.bad  { color: #FFB3B3; }
+
+/* ─── CIRCLES ─── */
+.circle-row { display: flex; gap: 8px; justify-content: space-around; margin-top: 4px; }
+.ci { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ci-label { font-size: 9px; color: var(--text-soft); text-align: center; }
+
+/* ─── LINE ─── */
+.sl-labels { display: flex; justify-content: space-between; margin-top: 3px; }
+.sl-lbl { font-size: 9px; color: var(--text-soft); }
+
+/* ─── PANEL FOOTER ─── */
+.panel-footer { padding: 8px 14px; border-top: 1px solid rgba(255,255,255,0.10); display: flex; align-items: center; justify-content: space-between; }
+.pf-brand { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase; }
+.pf-date  { font-size: 9px; color: var(--text-faint); }
+
+/* ─── DIVIDER ─── */
+.divider { height: 1px; background: rgba(255,255,255,0.12); margin: 2px 0; }
+
+/* ─── ANIMATION ─── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.widget:nth-child(1)  { animation-delay:.04s }
+.widget:nth-child(2)  { animation-delay:.08s }
+.widget:nth-child(3)  { animation-delay:.12s }
+.widget:nth-child(4)  { animation-delay:.16s }
+.widget:nth-child(5)  { animation-delay:.20s }
+.widget:nth-child(6)  { animation-delay:.24s }
+.widget:nth-child(7)  { animation-delay:.28s }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.20); border-radius: 2px; }
+
+/* ─── SINGLE VIEW ─── */
+.panels-scroll.single .panel.visible { width: 100vw; min-width: 100vw; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="app-header">
+  <div class="app-logo">
+    <div class="logo-mark">RH</div>
+    <div class="logo-text">XIPP <span>Benefícios</span></div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="header-filters">
+    <span class="hf-label">Filtros</span>
+    <div class="hf-chip">Empresa <span class="hf-arrow">▼</span></div>
+    <div class="hf-chip">Diretoria <span class="hf-arrow">▼</span></div>
+    <div class="hf-chip">Centro de Custo <span class="hf-arrow">▼</span></div>
+    <div class="hf-chip">Gestor <span class="hf-arrow">▼</span></div>
+    <div class="hf-chip">Colaborador <span class="hf-arrow">▼</span></div>
+  </div>
+  <div class="header-right">
+    <div class="header-date">📅 Jan – Jun 2025</div>
+    <button class="btn-update">↻ Atualizar</button>
+  </div>
+</header>
+
+<!-- ═══ TABS ═══ -->
+<div class="tab-bar">
+  <div class="tab active" onclick="setView('all',this)">Todos os Painéis</div>
+  <div class="tab" onclick="setView('1',this)">Painel Geral – Bloco 1</div>
+  <div class="tab" onclick="setView('2',this)">Treinamento &amp; DHO – Bloco 2</div>
+  <div class="tab" onclick="setView('3',this)">Atração e Seleção – Bloco 3</div>
+  <div class="tab" onclick="setView('4',this)">Departamento Pessoal – Bloco 4</div>
+  <div class="tab" onclick="setView('5',this)">Consultoria Interna – Bloco 5</div>
+</div>
+
+<!-- ═══════════════════════════ PANELS ═══════════════════════════ -->
+<div class="panels-scroll" id="panels">
+
+  <!-- ══════════════ BLOCO 1 – PAINEL GERAL ══════════════ -->
+  <div class="panel visible" data-panel="1">
+    <div class="panel-header">
+      <div><div class="panel-eyebrow">Bloco 1</div><div class="panel-title">PAINEL GERAL</div></div>
+      <div class="panel-badge">Visão Executiva</div>
+    </div>
+    <div class="panel-body">
+
+      <!-- Total de Ativos -->
+      <div class="widget dark">
+        <div class="widget-label">Total de Colaboradores Ativos</div>
+        <div class="widget-value">1.248</div>
+        <div class="widget-trend t-up">↑ +42 vs período anterior</div>
+      </div>
+
+      <!-- Turnover 3 cards -->
+      <div class="g3">
+        <div class="widget">
+          <div class="widget-label" style="font-size:8px;">Taxa Desligamento</div>
+          <div class="widget-value md">8,4%</div>
+          <div class="widget-sub">geral</div>
+        </div>
+        <div class="widget light">
+          <div class="widget-label" style="font-size:8px;">Turnover Voluntário</div>
+          <div class="widget-value md">5,1%</div>
+          <div class="widget-sub">iniciativa collab.</div>
+        </div>
+        <div class="widget pale">
+          <div class="widget-label" style="font-size:8px;">Involuntário</div>
+          <div class="widget-value md dark-text">3,3%</div>
+          <div class="widget-sub" style="color:rgba(90,65,144,.6)">empresa</div>
+        </div>
+      </div>
+
+      <!-- Headcount por Diretoria -->
+      <div class="widget">
+        <div class="widget-label">Headcount por Diretoria</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl">Operações</span><div class="bar-track"><div class="bar-fill f-dark" style="width:82%"></div></div><span class="bar-val">342</span></div>
+          <div class="bar-row"><span class="bar-lbl">Comercial</span><div class="bar-track"><div class="bar-fill f-light" style="width:68%"></div></div><span class="bar-val">284</span></div>
+          <div class="bar-row"><span class="bar-lbl">TI & Digital</span><div class="bar-track"><div class="bar-fill f-dark" style="width:52%"></div></div><span class="bar-val">215</span></div>
+          <div class="bar-row"><span class="bar-lbl">Financeiro</span><div class="bar-track"><div class="bar-fill f-light" style="width:36%"></div></div><span class="bar-val">150</span></div>
+          <div class="bar-row"><span class="bar-lbl">RH & Adm</span><div class="bar-track"><div class="bar-fill f-dark" style="width:25%"></div></div><span class="bar-val">104</span></div>
+        </div>
+      </div>
+
+      <!-- NPS + eNPS -->
+      <div class="g2">
+        <div class="widget green-card">
+          <div class="widget-label">NPS Médio Treinamentos</div>
+          <div class="widget-value md dark-text">72</div>
+          <div class="widget-trend" style="color:rgba(40,80,60,.8);">↑ Meta 70 ✓</div>
+        </div>
+        <div class="widget dark">
+          <div class="widget-label">eNPS Colaboradores</div>
+          <div class="widget-value md">48</div>
+          <div class="widget-trend t-up">Zona Excelente</div>
+        </div>
+      </div>
+
+      <!-- Turnover gráfico linha -->
+      <div class="widget dark">
+        <div class="widget-label">Evolução do Turnover — 2025</div>
+        <svg viewBox="0 0 370 60" width="100%" style="margin-top:6px; overflow:visible;">
+          <defs>
+            <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#CFC0EA" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#CFC0EA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="15" x2="370" y2="15" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+          <line x1="0" y1="30" x2="370" y2="30" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+          <line x1="0" y1="45" x2="370" y2="45" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+          <path d="M20,46 L80,40 L140,43 L200,34 L260,28 L320,22 L360,18 L360,60 L20,60Z" fill="url(#tg)"/>
+          <path d="M20,46 L80,40 L140,43 L200,34 L260,28 L320,22 L360,18" fill="none" stroke="#CFC0EA" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M20,38 L80,36 L140,32 L200,28 L260,24 L320,20 L360,16" fill="none" stroke="#7FD4B0" stroke-width="1.8" stroke-dasharray="5 3" stroke-linejoin="round"/>
+          <circle cx="20" cy="46" r="3.5" fill="#CFC0EA"/>
+          <circle cx="80" cy="40" r="3.5" fill="#CFC0EA"/>
+          <circle cx="140" cy="43" r="3.5" fill="#CFC0EA"/>
+          <circle cx="200" cy="34" r="3.5" fill="#CFC0EA"/>
+          <circle cx="260" cy="28" r="3.5" fill="#7FD4B0"/>
+          <circle cx="320" cy="22" r="3.5" fill="#7FD4B0"/>
+          <circle cx="360" cy="18" r="3.5" fill="#7FD4B0"/>
+        </svg>
+        <div class="sl-labels">
+          <span class="sl-lbl">Jan</span><span class="sl-lbl">Fev</span><span class="sl-lbl">Mar</span>
+          <span class="sl-lbl">Abr</span><span class="sl-lbl">Mai</span><span class="sl-lbl">Jun</span>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:6px;">
+          <span style="font-size:9px;color:#CFC0EA;">— Turnover</span>
+          <span style="font-size:9px;color:#7FD4B0;">- - NPS (norm.)</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="panel-footer"><span class="pf-brand">xipp</span><span class="pf-date">Atualizado: 26/06/2025</span></div>
+  </div>
+
+  <!-- ══════════════ BLOCO 2 – TREINAMENTO & DHO ══════════════ -->
+  <div class="panel visible" data-panel="2">
+    <div class="panel-header">
+      <div><div class="panel-eyebrow">Bloco 2</div><div class="panel-title">TREINAMENTO E DHO</div></div>
+      <div class="panel-badge">Desenvolvimento</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="g2">
+        <div class="widget green-dark-card">
+          <div class="widget-label">Carga Horária Total</div>
+          <div class="widget-value md">3.640h</div>
+          <div class="widget-trend t-up">↑ +12%</div>
+        </div>
+        <div class="widget dark">
+          <div class="widget-label">CH Média / Colaborador</div>
+          <div class="widget-value md">18,2h</div>
+          <div class="widget-sub">por participante</div>
+        </div>
+      </div>
+
+      <div class="g3">
+        <div class="widget" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Qtd. Treinamentos</div>
+          <div class="widget-value md">84</div>
+          <div class="widget-sub">ações</div>
+        </div>
+        <div class="widget pale" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Taxa Adesão</div>
+          <div class="widget-value md dark-text">78%</div>
+          <div class="widget-sub" style="color:rgba(90,65,144,.6)">↑ +3,1pp</div>
+        </div>
+        <div class="widget light" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Tx. Conclusão</div>
+          <div class="widget-value md">86%</div>
+          <div class="widget-sub">↑ +5,4pp</div>
+        </div>
+      </div>
+
+      <!-- Conclusão por Trilha -->
+      <div class="widget">
+        <div class="widget-label">Conclusão por Trilha (%)</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl xs">Seg. Trabalho</span><div class="bar-track"><div class="bar-fill f-green" style="width:95%"></div></div><span class="bar-val">95%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Liderança</span><div class="bar-track"><div class="bar-fill f-dark" style="width:92%"></div></div><span class="bar-val">92%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Compliance</span><div class="bar-track"><div class="bar-fill f-light" style="width:88%"></div></div><span class="bar-val">88%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Vendas</span><div class="bar-track"><div class="bar-fill f-dark" style="width:85%"></div></div><span class="bar-val">85%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Onboarding</span><div class="bar-track"><div class="bar-fill f-green" style="width:79%"></div></div><span class="bar-val">79%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Digital</span><div class="bar-track"><div class="bar-fill f-light" style="width:71%"></div></div><span class="bar-val">71%</span></div>
+        </div>
+      </div>
+
+      <!-- NPS por Treinamento -->
+      <div class="widget pale">
+        <div class="widget-label" style="color:rgba(90,65,144,.65)">NPS por Treinamento</div>
+        <table class="mtable">
+          <thead><tr><th style="color:rgba(90,65,144,.55)">Treinamento</th><th style="color:rgba(90,65,144,.55)">Part.</th><th style="color:rgba(90,65,144,.55)">NPS</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--card-dark)">Liderança Essencial</td><td class="num" style="color:var(--card-dark)">124</td><td class="num" style="color:var(--card-dark)">81</td></tr>
+            <tr><td style="color:var(--card-dark)">Compliance & Ética</td><td class="num" style="color:var(--card-dark)">892</td><td class="num" style="color:var(--card-dark)">75</td></tr>
+            <tr><td style="color:var(--card-dark)">Técnicas de Vendas</td><td class="num" style="color:var(--card-dark)">215</td><td class="num" style="color:var(--card-dark)">69</td></tr>
+            <tr><td style="color:var(--card-dark)">Onboarding 2025</td><td class="num" style="color:var(--card-dark)">58</td><td class="num" style="color:var(--card-dark)">84</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Participações + Desempenho -->
+      <div class="g2">
+        <div class="widget" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Participações Únicas</div>
+          <div class="widget-value sm">892</div>
+          <div class="widget-sub">colaboradores distintos</div>
+        </div>
+        <div class="widget green-card" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Desempenho Concluído</div>
+          <div class="widget-value sm dark-text">91,2%</div>
+          <div class="widget-sub" style="color:rgba(40,80,60,.7);">avaliações</div>
+        </div>
+      </div>
+
+      <!-- eNPS -->
+      <div class="widget dark">
+        <div class="widget-label">eNPS — Engajamento de Colaboradores</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+          <div class="widget-value" style="font-size:34px;">48</div>
+          <div style="text-align:right;"><div style="font-size:10px;color:var(--green-light);font-weight:700;">Zona Excelente</div><div style="font-size:9px;color:var(--text-soft);">Promotores: 60%</div></div>
+        </div>
+        <div class="nps-bar">
+          <div class="nps-seg" style="flex:12;background:#FF6B6B;">12%</div>
+          <div class="nps-seg" style="flex:28;background:#F5A623;">28%</div>
+          <div class="nps-seg" style="flex:60;background:#5BBF99;">60%</div>
+        </div>
+        <div style="display:flex;gap:10px;font-size:9px;color:var(--text-soft);">
+          <span style="color:#FFB3B3;">● Detrat. 12%</span>
+          <span style="color:#FFD080;">● Neutr. 28%</span>
+          <span style="color:var(--green-light);">● Promot. 60%</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="panel-footer"><span class="pf-brand">xipp</span><span class="pf-date">Atualizado: 26/06/2025</span></div>
+  </div>
+
+  <!-- ══════════════ BLOCO 3 – ATRAÇÃO E SELEÇÃO ══════════════ -->
+  <div class="panel visible" data-panel="3">
+    <div class="panel-header">
+      <div><div class="panel-eyebrow">Bloco 3</div><div class="panel-title">ATRAÇÃO E SELEÇÃO</div></div>
+      <div class="panel-badge">Recrutamento</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="g2">
+        <div class="widget dark">
+          <div class="widget-label">Vagas Abertas</div>
+          <div class="widget-value">37</div>
+          <div class="widget-trend t-down">↑ +8 vs mês ant.</div>
+        </div>
+        <div class="widget green-card">
+          <div class="widget-label">SLA das Vagas</div>
+          <div class="widget-value md dark-text">28d</div>
+          <div class="widget-trend" style="color:rgba(40,80,60,.8);">↓ Meta 31d ✓</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="widget pale" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Recrutamento Interno</div>
+          <div class="widget-value sm dark-text">24,3%</div>
+          <div class="widget-trend t-up" style="color:var(--green-dark);">↑ +2,1pp</div>
+        </div>
+        <div class="widget" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Turnover no Período</div>
+          <div class="widget-value sm">8,4%</div>
+          <div class="widget-trend t-up">↓ Melhorando</div>
+        </div>
+      </div>
+
+      <!-- SLA por área -->
+      <div class="widget">
+        <div class="widget-label">SLA das Vagas por Área (dias)</div>
+        <div style="margin-top:6px;">
+          <div class="sla-row"><span class="sla-name">TI & Digital</span><div class="sla-track"><div class="sla-fill s-bad" style="width:90%"></div></div><span class="sla-val bad">45d</span></div>
+          <div class="sla-row"><span class="sla-name">Operações</span><div class="sla-track"><div class="sla-fill s-warn" style="width:64%"></div></div><span class="sla-val warn">32d</span></div>
+          <div class="sla-row"><span class="sla-name">Comercial</span><div class="sla-track"><div class="sla-fill s-ok" style="width:52%"></div></div><span class="sla-val ok">26d</span></div>
+          <div class="sla-row"><span class="sla-name">Financeiro</span><div class="sla-track"><div class="sla-fill s-ok" style="width:44%"></div></div><span class="sla-val ok">22d</span></div>
+          <div class="sla-row"><span class="sla-name">Marketing</span><div class="sla-track"><div class="sla-fill s-ok" style="width:36%"></div></div><span class="sla-val ok">18d</span></div>
+          <div class="sla-row"><span class="sla-name">RH & Adm</span><div class="sla-track"><div class="sla-fill s-ok" style="width:28%"></div></div><span class="sla-val ok">14d</span></div>
+        </div>
+        <div style="display:flex;gap:12px;font-size:9px;color:var(--text-soft);margin-top:4px;">
+          <span style="color:var(--green-light);">● ≤30d OK</span>
+          <span style="color:#FFD080;">● 31–40d Atenção</span>
+          <span style="color:#FFB3B3;">● >40d Crítico</span>
+        </div>
+      </div>
+
+      <!-- Motivos de desligamento -->
+      <div class="widget light">
+        <div class="widget-label">Motivos de Desligamento</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl xs">Prop. externa</span><div class="bar-track"><div class="bar-fill f-dark" style="width:72%"></div></div><span class="bar-val">28%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Clima interno</span><div class="bar-track"><div class="bar-fill f-dark" style="width:56%"></div></div><span class="bar-val">22%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Gestão</span><div class="bar-track"><div class="bar-fill f-dark" style="width:46%"></div></div><span class="bar-val">18%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Remuneração</span><div class="bar-track"><div class="bar-fill f-dark" style="width:38%"></div></div><span class="bar-val">15%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Outros</span><div class="bar-track"><div class="bar-fill f-dark" style="width:22%"></div></div><span class="bar-val">17%</span></div>
+        </div>
+      </div>
+
+      <!-- Vagas table -->
+      <div class="widget dark">
+        <div class="widget-label">Vagas por Status</div>
+        <table class="mtable">
+          <thead><tr><th>Área</th><th>Vagas</th><th>SLA</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>TI & Digital</td><td class="num">9</td><td class="num">45d</td><td><span class="mbadge mb-r">Crítico</span></td></tr>
+            <tr><td>Operações</td><td class="num">12</td><td class="num">32d</td><td><span class="mbadge mb-w">Atenção</span></td></tr>
+            <tr><td>Comercial</td><td class="num">8</td><td class="num">26d</td><td><span class="mbadge mb-g">OK</span></td></tr>
+            <tr><td>Financeiro</td><td class="num">5</td><td class="num">22d</td><td><span class="mbadge mb-g">OK</span></td></tr>
+            <tr><td>Marketing</td><td class="num">3</td><td class="num">18d</td><td><span class="mbadge mb-g">OK</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <div class="panel-footer"><span class="pf-brand">xipp</span><span class="pf-date">Atualizado: 26/06/2025</span></div>
+  </div>
+
+  <!-- ══════════════ BLOCO 4 – DEPARTAMENTO PESSOAL ══════════════ -->
+  <div class="panel visible" data-panel="4">
+    <div class="panel-header">
+      <div><div class="panel-eyebrow">Bloco 4</div><div class="panel-title">DEPARTAMENTO PESSOAL</div></div>
+      <div class="panel-badge">DP</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="g3">
+        <div class="widget dark" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Quadro Ativo</div>
+          <div class="widget-value md">1.248</div>
+          <div class="widget-sub">colaboradores</div>
+        </div>
+        <div class="widget green-card" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Admitidos</div>
+          <div class="widget-value md dark-text">58</div>
+          <div class="widget-sub" style="color:rgba(40,80,60,.7)">jun/25</div>
+        </div>
+        <div class="widget pale" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Demitidos</div>
+          <div class="widget-value md dark-text">34</div>
+          <div class="widget-sub" style="color:rgba(90,65,144,.6)">jun/25</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="widget" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Tempo Médio de Empresa</div>
+          <div class="widget-value sm">3,8 anos</div>
+          <div class="widget-trend t-up">↑ retenção crescendo</div>
+        </div>
+        <div class="widget light" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Movimentações Internas</div>
+          <div class="widget-value sm">42</div>
+          <div class="widget-sub">promoções + transferências</div>
+        </div>
+      </div>
+
+      <!-- Gênero donut -->
+      <div class="widget dark">
+        <div class="widget-label">Distribuição por Gênero</div>
+        <div class="donut-row" style="margin-top:6px;">
+          <svg width="88" height="88" viewBox="0 0 88 88" style="flex-shrink:0;">
+            <circle cx="44" cy="44" r="34" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="13"/>
+            <circle cx="44" cy="44" r="34" fill="none" stroke="#7B5EAF" stroke-width="13" stroke-dasharray="129 214" stroke-dashoffset="53" transform="rotate(-90 44 44)"/>
+            <circle cx="44" cy="44" r="34" fill="none" stroke="#7FD4B0" stroke-width="13" stroke-dasharray="81 214" stroke-dashoffset="-76" transform="rotate(-90 44 44)"/>
+            <circle cx="44" cy="44" r="34" fill="none" stroke="#CFC0EA" stroke-width="13" stroke-dasharray="13 214" stroke-dashoffset="-157" transform="rotate(-90 44 44)"/>
+            <text x="44" y="41" text-anchor="middle" fill="white" font-size="11" font-family="Playfair Display,serif" font-weight="700">60/38</text>
+            <text x="44" y="52" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="7" font-family="Sora,sans-serif">M / F</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:#7B5EAF;"></div>Masculino<span class="dl-val">60%</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:#7FD4B0;"></div>Feminino<span class="dl-val">38%</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:#CFC0EA;"></div>Não-bin.<span class="dl-val">2%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Geração -->
+      <div class="widget">
+        <div class="widget-label">Distribuição por Geração</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl xs">Gen Z (18–28)</span><div class="bar-track"><div class="bar-fill f-green" style="width:56%"></div></div><span class="bar-val">29%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Millennials (29–40)</span><div class="bar-track"><div class="bar-fill f-dark" style="width:80%"></div></div><span class="bar-val">42%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Gen X (41–56)</span><div class="bar-track"><div class="bar-fill f-light" style="width:44%"></div></div><span class="bar-val">22%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Boomers (57+)</span><div class="bar-track"><div class="bar-fill f-dark" style="width:14%"></div></div><span class="bar-val">7%</span></div>
+        </div>
+      </div>
+
+      <!-- Nível Funcional -->
+      <div class="widget pale">
+        <div class="widget-label" style="color:rgba(90,65,144,.65)">Distribuição por Nível Funcional</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl xs dark-lbl">Operacional</span><div class="bar-track"><div class="bar-fill f-dark" style="width:74%"></div></div><span class="bar-val dark-val">37%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs dark-lbl">Analista/Esp.</span><div class="bar-track"><div class="bar-fill f-dark" style="width:76%"></div></div><span class="bar-val dark-val">38%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs dark-lbl">Coordenação</span><div class="bar-track"><div class="bar-fill f-dark" style="width:28%"></div></div><span class="bar-val dark-val">14%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs dark-lbl">Gerência</span><div class="bar-track"><div class="bar-fill f-dark" style="width:16%"></div></div><span class="bar-val dark-val">8%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs dark-lbl">Diretoria</span><div class="bar-track"><div class="bar-fill f-green" style="width:6%"></div></div><span class="bar-val dark-val">3%</span></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="panel-footer"><span class="pf-brand">xipp</span><span class="pf-date">Atualizado: 26/06/2025</span></div>
+  </div>
+
+  <!-- ══════════════ BLOCO 5 – CONSULTORIA INTERNA ══════════════ -->
+  <div class="panel visible" data-panel="5">
+    <div class="panel-header">
+      <div><div class="panel-eyebrow">Bloco 5</div><div class="panel-title">CONSULTORIA INTERNA</div></div>
+      <div class="panel-badge">Lideranças</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="g2">
+        <div class="widget green-card">
+          <div class="widget-label">Headcount Total</div>
+          <div class="widget-value md dark-text">1.248</div>
+          <div class="widget-sub" style="color:rgba(40,80,60,.7)">6 empresas do Grupo</div>
+        </div>
+        <div class="widget dark" style="padding:11px;">
+          <div class="widget-label" style="font-size:8px;">Turnover Geral</div>
+          <div class="widget-value sm">8,4%</div>
+          <div class="widget-trend t-up">↓ Melhorando</div>
+        </div>
+      </div>
+
+      <div class="g3">
+        <div class="widget" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Vagas Abertas</div>
+          <div class="widget-value md">37</div>
+          <div class="widget-sub">SLA: 28d</div>
+        </div>
+        <div class="widget pale" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">Rec. Interno</div>
+          <div class="widget-value md dark-text">24%</div>
+          <div class="widget-trend t-up" style="color:var(--green-dark);">↑</div>
+        </div>
+        <div class="widget light" style="padding:10px;">
+          <div class="widget-label" style="font-size:8px;">eNPS</div>
+          <div class="widget-value md">48</div>
+          <div class="widget-sub">Excelente</div>
+        </div>
+      </div>
+
+      <!-- Turnover por empresa -->
+      <div class="widget">
+        <div class="widget-label">Turnover por Empresa do Grupo</div>
+        <div class="bar-list">
+          <div class="bar-row"><span class="bar-lbl xs">Empresa Alpha</span><div class="bar-track"><div class="bar-fill f-green" style="width:40%"></div></div><span class="bar-val">7,2%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Empresa Beta</span><div class="bar-track"><div class="bar-fill f-dark" style="width:55%"></div></div><span class="bar-val">9,8%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Empresa Gama</span><div class="bar-track"><div class="bar-fill f-green" style="width:28%"></div></div><span class="bar-val">5,1%</span></div>
+          <div class="bar-row"><span class="bar-lbl xs">Empresa Delta</span><div class="bar-track"><div class="bar-fill f-light" style="width:68%"></div></div><span class="bar-val">12,4%</span></div>
+        </div>
+      </div>
+
+      <!-- Tabela por área -->
+      <div class="widget dark">
+        <div class="widget-label">Headcount + Assiduidade por Área</div>
+        <table class="mtable">
+          <thead><tr><th>Área</th><th>HC</th><th>Vagas</th><th>Assid.</th><th>–</th></tr></thead>
+          <tbody>
+            <tr><td>Operações</td><td class="num">342</td><td class="num">12</td><td class="num">90%</td><td><span class="mbadge mb-g">OK</span></td></tr>
+            <tr><td>Comercial</td><td class="num">284</td><td class="num">8</td><td class="num">83%</td><td><span class="mbadge mb-g">OK</span></td></tr>
+            <tr><td>TI & Digital</td><td class="num">215</td><td class="num">9</td><td class="num">76%</td><td><span class="mbadge mb-w">Atenção</span></td></tr>
+            <tr><td>Financeiro</td><td class="num">150</td><td class="num">5</td><td class="num">88%</td><td><span class="mbadge mb-g">OK</span></td></tr>
+            <tr><td>Marketing</td><td class="num">78</td><td class="num">3</td><td class="num">81%</td><td><span class="mbadge mb-g">OK</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- eNPS + Desempenho cards finais -->
+      <div class="g2">
+        <div class="widget dark" style="padding:14px;text-align:center;">
+          <div class="widget-label" style="text-align:center;">eNPS</div>
+          <div class="widget-value" style="font-size:42px;">48</div>
+          <div style="font-size:10px;color:var(--green-light);font-weight:700;margin-top:2px;">Zona Excelente</div>
+        </div>
+        <div class="widget green-card" style="padding:14px;text-align:center;">
+          <div class="widget-label" style="text-align:center;">Desempenho</div>
+          <div class="widget-value md dark-text" style="font-size:34px;">91%</div>
+          <div style="font-size:10px;color:rgba(40,80,60,.8);font-weight:700;margin-top:2px;">Avaliações concluídas</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="panel-footer"><span class="pf-brand">xipp</span><span class="pf-date">Atualizado: 26/06/2025</span></div>
+  </div>
+
+</div><!-- /panels-scroll -->
+
+<script>
+function setView(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const wrap = document.getElementById('panels');
+  const panels = document.querySelectorAll('.panel');
+  if (id === 'all') {
+    wrap.className = 'panels-scroll';
+    panels.forEach(p => p.classList.add('visible'));
+  } else {
+    wrap.className = 'panels-scroll single';
+    panels.forEach(p => p.dataset.panel === id ? p.classList.add('visible') : p.classList.remove('visible'));
+  }
+}
+
+window.addEventListener('load', () => {
+  document.querySelectorAll('.bar-fill, .sla-fill').forEach(b => {
+    const w = b.style.width;
+    b.style.width = '0';
+    setTimeout(() => { b.style.width = w; }, 250);
+  });
+});
+</script>
+</body>
+</html>
